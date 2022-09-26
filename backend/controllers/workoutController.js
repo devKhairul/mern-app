@@ -1,4 +1,4 @@
-const { isValidObjectId, isObjectIdOrHexString } = require('mongoose')
+const { isObjectIdOrHexString } = require('mongoose')
 
 const Workout = require('../models/workoutModel')
 
@@ -85,12 +85,31 @@ const deleteWorkoutById = async (req, res) => {
     res.status(200).json({success: true, id: id})
 }
 
+/**
+ * Update a workout
+ */
+const updateWorkoutById = async (req, res) => {
+    const { id } = req.params
+    
+    if (!isObjectIdOrHexString(id)) {   
+        return res.status(400).json({msg: 'Invalid document ID'})
+    }
 
+    const workout = await Workout.findByIdAndUpdate(id, { ...req.body })
+    
+    if (!workout) {
+        return res.status(404).json({msg: 'Invalid or non-existent document ID'})
+    }
+    
+    res.status(200).json({success: true, id: id})
+
+}
 
 
 module.exports = {
     createWorkout,
     getWorkouts,
     getWorkoutById,
-    deleteWorkoutById
+    deleteWorkoutById,
+    updateWorkoutById
 }
