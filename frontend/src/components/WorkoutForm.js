@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { ThreeDots } from  'react-loader-spinner'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const WorkoutForm = () => {
 
@@ -10,12 +12,11 @@ const WorkoutForm = () => {
     const [load, setLoad] = useState('')
     const [reps, setReps] = useState('')
     const [error, setError] = useState(null)
+    const workout = {title, load, reps}
+    
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-
-        const workout = {title, load, reps}
-
+    const createWorkout = async () => {
+        
         const response = await fetch('http://localhost:4000/api/workouts', {
             method: "POST",
             body: JSON.stringify(workout),
@@ -25,7 +26,7 @@ const WorkoutForm = () => {
         })
 
         const json = await response.json()
-
+       
         if (!response.ok) {
             setError(json.error)
         }
@@ -34,16 +35,40 @@ const WorkoutForm = () => {
             setTitle('')
             setLoad('')
             setReps('')
-            queryClient.invalidateQueries(['workoutData'])
         }
+    }
+    const mutation = useMutation(createWorkout, {
+        onSuccess: data => {
+            queryClient.invalidateQueries('workoutData')
+            
+            // queryClient.setQueryData(['workoutData'], data)
+            
+            toast.success('Workout added', {
+                position: "top-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                progress: undefined,
+            });
+            
+        },
+        onError: (error) => {
+            console.log(error)
+        }
+        
+    })
+    
+    const onSubmit = (e) => {
+        e.preventDefault()
+        mutation.mutate(workout)
     }
 
 
   return (
-    <form className='create' onSubmit={handleSubmit}>
+    <form className='create' onSubmit={onSubmit}>
         <h3>Add a New Workout</h3>
 
-        <label>Exerercise Title:</label>
+        <label>Exercise Title:</label>
         <input 
             type="text" 
             onChange={(e)=>setTitle(e.target.value)}
@@ -67,8 +92,28 @@ const WorkoutForm = () => {
             required
             
         />
-        <button>Add workout</button>
+        <button>
+
+        { mutation.isLoading ? 
+            <ThreeDots 
+                height="20" 
+                width="40" 
+                radius="9"
+                color="#FFF" 
+                ariaLabel="three-dots-loading"
+                wrapperStyle={{}}
+                wrapperClassName=""
+                visible={true}
+            /> : 'Add Workout' 
+        }
+        </button>
+        
+        { mutation.isSuccess ? 
+            <ToastContainer />  : null 
+        }
+        
         {error && <div className='error'>{error}</div>}
+
     </form>
   )
 }

@@ -1,7 +1,7 @@
 import WorkoutDetails from "../components/WorkoutDetails"
 import WorkoutForm from "../components/WorkoutForm"
 import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
+
 
 const Home = () => {
   
@@ -13,17 +13,21 @@ const Home = () => {
     return <div>Loading Workouts</div>
   }
 
+  
+
  
   return (
-    <div className="home">
-      <div className="workouts">
-        {workouts && workouts.map(workout => (
-         <WorkoutDetails workout={workout} key={workout._id} />
-        ))}
+    <>
+      {workouts.length === 0 ? <h2>No workout found</h2> : ''}
+      <div className="home">
+        <div className="workouts">
+          {workouts && workouts.map(workout => (
+          <WorkoutDetails workout={workout} key={workout._id} />
+          ))}
+        </div>
+        <WorkoutForm />  
       </div>
-      <WorkoutForm />
-      
-    </div>
+    </>
   )
 }
 
