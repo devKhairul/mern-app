@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuthContext } from '../hooks/useAuthContext'
 import { ThreeDots } from  'react-loader-spinner'
-import { ToastContainer, toast } from 'react-toastify';
+import axios from 'axios'
 
 const Register = () => {
     
@@ -11,42 +11,33 @@ const Register = () => {
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(null)
     const { dispatch } = useAuthContext()
-
+   
     const createAccount = async () => {
-        const response = await fetch('http://localhost:4000/api/user/register', {
-            method: 'POST',
-            headers: { 'Content-type': 'application/json' },
-            body: JSON.stringify({email, password})
+        return await axios.post('http://localhost:4000/api/user/register', {
+            email, password
         })
-
-        const json = await response.json()
-
-        if (!response.ok) {
-            return json.error 
-        }
-
-        if (response.ok) {
-           return json
-        }
     }
 
-    const mutation = useMutation(createAccount, {
-        onSuccess: data => {
-            // Set Local Storage
-            localStorage.setItem('user', JSON.stringify(data))
+    const createAccountMutation = useMutation(createAccount, {
+        onSuccess: resp => {
+            // set local storage
+            localStorage.setItem('user', JSON.stringify(resp.data))
 
-            // Dispatch Login 
-            dispatch({type: 'LOGIN', payload: data })
+            // // update auth context
+            dispatch({type: 'LOGIN', payload: resp.data})
+
+            setSuccess('Registration successful')
+            setError(null)
         },
-        onSettled: error => {
-            setError(error)
+        onError: error => {
+            setError(error.response.data.error)
         }
     })
 
     const onSubmit = async (e) => {
         e.preventDefault()
         
-        mutation.mutate()
+        createAccountMutation.mutate()
     }
 
     return(
@@ -68,17 +59,20 @@ const Register = () => {
                     value={password}
                 />
 
-                <button>{mutation.isLoading ? <ThreeDots 
-                            height="20" 
-                            width="40" 
-                            radius="9"
-                            color="#FFF" 
-                            ariaLabel="three-dots-loading"
-                            wrapperClassName=""
-                            visible={true}
-                        /> : 'Register' }</button>     
+                <button>{createAccountMutation.isLoading ? 
+                            <ThreeDots 
+                                height="20" 
+                                width="40" 
+                                radius="9"
+                                color="#FFF" 
+                                ariaLabel="three-dots-loading"
+                                wrapperStyle={{}}
+                                wrapperClassName=""
+                                visible={true}
+                            /> : 'Register'}</button>     
                 {error ? <div className='error'>{error}</div> : ''}
-                {mutation.isSuccess ? <div className='success'>Registration successful</div> : ''}
+                {success ? <div className='success'>{success}</div> : ''}
+                
                     
             </form>
              
