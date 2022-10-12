@@ -20,6 +20,7 @@ const Register = () => {
 
     const createAccountMutation = useMutation(createAccount, {
         onSuccess: resp => {
+            // console.log(resp.data)
             // set local storage
             localStorage.setItem('user', JSON.stringify(resp.data))
 

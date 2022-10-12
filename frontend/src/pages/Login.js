@@ -1,18 +1,48 @@
 import React, { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { useAuthContext } from '../hooks/useAuthContext'
+import { ThreeDots } from  'react-loader-spinner'
+import axios from 'axios'
 
 const Login = () => {
     
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        console.log(email, password);
+    const [error, setError] = useState(null)
+    const { dispatch } = useAuthContext()
+   
+    const loginUser = async () => {
+        return await axios.post('http://localhost:4000/api/user/login', {
+            email, password
+        })
     }
+
+    const loginUserMutation = useMutation(loginUser, {
+        onSuccess: resp => {
+            // console.log(resp.data)
+            // set local storage
+            localStorage.setItem('user', JSON.stringify(resp.data))
+
+            // // update auth context
+            dispatch({type: 'LOGIN', payload: resp.data})
+
+            setError(null)
+        },
+        onError: error => {
+            setError(error.response.data.error)
+        }
+    })
+
+    const onSubmit = async (e) => {
+        e.preventDefault()
+        
+        loginUserMutation.mutate()
+    }
+
 
     return(
         <>
-            <form className='login' onSubmit={handleSubmit}>
+            <form className='login' onSubmit={onSubmit}>
                 <h3>Login</h3>
                 <label htmlFor="email"></label>
                 <input 
@@ -29,7 +59,18 @@ const Login = () => {
                     value={password}
                 />
 
-                <button>Login</button>
+                <button>{loginUserMutation.isLoading ? 
+                            <ThreeDots 
+                                height="20" 
+                                width="40" 
+                                radius="9"
+                                color="#FFF" 
+                                ariaLabel="three-dots-loading"
+                                wrapperStyle={{}}
+                                wrapperClassName=""
+                                visible={true}
+                            /> : 'Login'}</button>     
+                {error ? <div className='error'>{error}</div> : ''}
 
             </form>
         </>
