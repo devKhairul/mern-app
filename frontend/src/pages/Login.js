@@ -2,9 +2,13 @@ import React, { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useAuthContext } from '../hooks/useAuthContext'
 import { ThreeDots } from  'react-loader-spinner'
+import { ToastContainer, toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 const Login = () => {
+
+    const navigate = useNavigate()
     
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -27,6 +31,18 @@ const Login = () => {
             dispatch({type: 'LOGIN', payload: resp.data})
 
             setError(null)
+
+            // toast notification
+            toast.success('Logged in', {
+                position: "bottom-right",
+                autoClose: 1000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                progress: undefined,
+            });
+
+            navigate('/')
+
         },
         onError: error => {
             setError(error.response.data.error)
@@ -71,6 +87,10 @@ const Login = () => {
                                 visible={true}
                             /> : 'Login'}</button>     
                 {error ? <div className='error'>{error}</div> : ''}
+
+                {loginUserMutation.isSuccess ?
+                     <ToastContainer />  : null 
+                }
 
             </form>
         </>
