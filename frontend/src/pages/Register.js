@@ -31,6 +31,7 @@ const Register = () => {
         },
         onError: error => {
             setError(error.response.data.error)
+            setSuccess(null)
         }
     })
 
