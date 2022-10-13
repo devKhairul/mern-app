@@ -3,10 +3,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ThreeDots } from  'react-loader-spinner'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios'
 
 const WorkoutForm = () => {
 
     const queryClient = new useQueryClient()
+
+    const user = JSON.parse(localStorage.getItem('user'))
+    console.log(user.token)
 
     const [title, setTitle] = useState('')
     const [load, setLoad] = useState('')
@@ -16,12 +20,13 @@ const WorkoutForm = () => {
     
 
     const createWorkout = async () => {
-        
-        const response = await fetch('http://localhost:4000/api/workouts', {
+
+      const response = await fetch('http://localhost:4000/api/workouts', {
             method: "POST",
             body: JSON.stringify(workout),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.token}`
             }
         })
 
@@ -37,19 +42,20 @@ const WorkoutForm = () => {
             setReps('')
         }
     }
+    
     const mutation = useMutation(createWorkout, {
         onSuccess: data => {
             queryClient.invalidateQueries('workoutData')
-            
-            // queryClient.setQueryData(['workoutData'], data)
-            
-            toast.success('Workout added', {
-                position: "top-right",
-                autoClose: 1000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                progress: undefined,
-            });
+            console.log(data)
+            // if (data !== undefined) {
+            //     toast.success('Workout added', {
+            //         position: "top-right",
+            //         autoClose: 1000,
+            //         hideProgressBar: false,
+            //         closeOnClick: true,
+            //         progress: undefined,
+            //     });
+            // }
             
         },
         onError: (error) => {

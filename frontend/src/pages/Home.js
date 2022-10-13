@@ -1,17 +1,27 @@
-import {useEffect} from 'react'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
+
 import WorkoutDetails from "../components/WorkoutDetails"
 import WorkoutForm from "../components/WorkoutForm"
-import { useQuery } from '@tanstack/react-query'
-import { useAuthContext } from "../hooks/useAuthContext"
-import axios from 'axios'
+
 
 
 const Home = () => {
 
-  const { user } = useAuthContext()
+  const navigate = useNavigate()
+  const user = JSON.parse(localStorage.getItem('user'))
 
-  const { isLoading, data: workouts } = useQuery(['workoutData'], () => 
-    fetch('http://localhost:4000/api/workouts', {
+  useEffect(() => {
+  
+    if (!user) {
+      navigate('/login')
+    }
+  }, [])
+  
+
+  const { isLoading, data: workouts } = useQuery(['workoutData'], async () => 
+    await fetch('http://localhost:4000/api/workouts', {
       headers: {
         Authorization: `Bearer ${user.token}`
       }
@@ -21,7 +31,6 @@ const Home = () => {
   )
 
 
-  
 
   if (isLoading) {
     return <div>Loading Workouts</div>
