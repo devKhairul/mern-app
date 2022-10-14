@@ -3,14 +3,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ThreeDots } from  'react-loader-spinner'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios'
+
 
 const WorkoutForm = () => {
 
     const queryClient = new useQueryClient()
 
     const user = JSON.parse(localStorage.getItem('user'))
-    console.log(user.token)
 
     const [title, setTitle] = useState('')
     const [load, setLoad] = useState('')
@@ -21,7 +20,7 @@ const WorkoutForm = () => {
 
     const createWorkout = async () => {
 
-      const response = await fetch('http://localhost:4000/api/workouts', {
+      return await fetch('http://localhost:4000/api/workouts', {
             method: "POST",
             body: JSON.stringify(workout),
             headers: {
@@ -29,37 +28,34 @@ const WorkoutForm = () => {
                 'Authorization': `Bearer ${user.token}`
             }
         })
-
-        const json = await response.json()
-       
-        if (!response.ok) {
-            setError(json.error)
-        }
-        if (response.ok) {
-            setError(null)
-            setTitle('')
-            setLoad('')
-            setReps('')
-        }
     }
     
     const mutation = useMutation(createWorkout, {
         onSuccess: data => {
             queryClient.invalidateQueries('workoutData')
-            console.log(data)
-            // if (data !== undefined) {
-            //     toast.success('Workout added', {
-            //         position: "top-right",
-            //         autoClose: 1000,
-            //         hideProgressBar: false,
-            //         closeOnClick: true,
-            //         progress: undefined,
-            //     });
-            // }
             
+            if (data.status === 200) {
+                toast.success('Workout added', {
+                    position: "top-right",
+                    autoClose: 1000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    progress: undefined,
+                });
+
+                setError(null)
+                setTitle('')
+                setLoad('')
+                setReps('')
+            }          
         },
-        onError: (error) => {
-            console.log(error)
+        onSettled: (error) => {
+        //    console.log(error)
+           
+           if (error.status === 401) {
+            setError(error.statusText)
+           }
+           
         }
         
     })

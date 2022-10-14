@@ -7,11 +7,16 @@ const WorkoutDetails = ({workout}) => {
     const queryClient = new useQueryClient()
 
     const {title, load, reps, createdAt} = workout
+
+    const user = JSON.parse(localStorage.getItem('user'))
     
     const handleClick = async () => {
         
         const response = await fetch('http://localhost:4000/api/workouts/' + workout._id, {
-            method: 'DELETE'  
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${user.token}`
+            }  
         })
 
         const json = await response.json()
